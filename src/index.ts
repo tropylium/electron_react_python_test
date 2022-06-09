@@ -3,14 +3,13 @@ import * as path from "path";
 import {spawn, execFile} from "child_process"
 import {DeferredPromise} from "./DeferredPromise";
 
+
 declare global {
   type FileOutput = {
     num_lines: number,
     num_chars: number,
     num_letters: number,
   }
-  type FileNameCallback = (fileName: string) => void
-  type FileOutputCallback = (fileOutput: FileOutput) => void
 
   interface Window {
     electronAPI: {
@@ -36,6 +35,14 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+const getExtraResourcePath = (fileName: string): string => {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'extraResources', fileName)
+  } else {
+    return `./extraResources/${fileName}`
+  }
+}
+
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -53,60 +60,6 @@ const createWindow = (): void => {
   mainWindow.webContents.openDevTools();
 };
 
-// const handleFileOpen = async (
-//     event: Electron.IpcMainInvokeEvent,
-//     fileNameCallback: FileNameCallback,
-//     fileOutputCallback: FileOutputCallback) => {
-//   const {canceled, filePaths} = await dialog.showOpenDialog({
-//   })
-//
-//   if (canceled) {
-//     fileNameCallback(null);
-//     fileOutputCallback(null);
-//     return;
-//   }
-//
-//   const absolute_file_path = filePaths[0]
-//   fileNameCallback(path.basename(absolute_file_path))
-//
-//   //spawn('./python_code/dist/simple', )
-//   execFile('./python_code/dist/file_processor', [absolute_file_path],
-//       (error, stdout, stderr) => {
-//         if (error) {
-//           fileOutputCallback(null);
-//           throw error;
-//         } else {
-//           const raw_output = stdout.split('\n')
-//           fileOutputCallback({
-//             num_lines: parseInt(raw_output[0]),
-//             num_chars: parseInt(raw_output[1]),
-//             num_letters: parseInt(raw_output[2]),
-//           });
-//           // output.num_lines = parseInt(raw_output[0])
-//           // output.num_chars = parseInt(raw_output[1])
-//           // output.num_letters = parseInt(raw_output[2])
-//         }
-//       }
-//       );
-// }
-
-// const handleFileOpen = async () => {
-//   const fileNamePromise = new DeferredPromise<string>(), fileProcessPromise = new DeferredPromise<FileOutput>();
-//
-//   const {canceled, filePaths} = await dialog.showOpenDialog({
-//   })
-//
-//   if (canceled) {
-//     fileNamePromise.reject();
-//     //fileProcessPromise.reject();
-//   } else {
-//     const absolute_file_path = filePaths[0]
-//     fileNamePromise.resolve(path.basename(absolute_file_path))
-//   }
-//
-//   return [fileNamePromise, fileProcessPromise]
-// };
-
 const selectFile = async () => {
   const {canceled, filePaths} = await dialog.showOpenDialog({
   })
@@ -122,7 +75,7 @@ const selectFile = async () => {
 
 const processFile = async (event: Electron.IpcMainInvokeEvent, filePath: string) => {
   return new Promise<FileOutput>((resolve, reject) => {
-    execFile('./python_code/dist/file_processor', [filePath],
+    execFile(getExtraResourcePath('file_processor'), [filePath],
         (error, stdout, stderr) => {
           if (error) {
             reject(error);
@@ -133,9 +86,6 @@ const processFile = async (event: Electron.IpcMainInvokeEvent, filePath: string)
               num_chars: parseInt(raw_output[1]),
               num_letters: parseInt(raw_output[2]),
             });
-            // output.num_lines = parseInt(raw_output[0])
-            // output.num_chars = parseInt(raw_output[1])
-            // output.num_letters = parseInt(raw_output[2])
           }
         }
     );

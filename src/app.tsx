@@ -29,15 +29,14 @@ const App = () => {
             setFileName(result.file_name);
             startTime.current = Date.now();
             setProcessTime(0);
-            return result.file_path;
-        }).then((file_path) => {
-            window.electronAPI.processFile(file_path).then((fileOutput: FileOutput) => {
+            window.electronAPI.processFile(result.file_path).then((fileOutput: FileOutput) => {
                 setFileProcessOutput(fileOutput);
                 setProcessTime(Date.now() - startTime.current);
                 clearInterval(timer.current);
+            }).catch((err) => {
+                clearInterval(timer.current)
+                console.log(err);
             })
-        }).catch((err) => {
-            console.log(err);
         })
 
         // const [fileNamePromise, fileOutputPromise] = result
