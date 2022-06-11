@@ -1,0 +1,51 @@
+.appContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+button {
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12pt;
+    color: white;
+    background-color: darkslategray;
+    transition: opacity;
+    transition-duration: 100ms;
+}
+
+button:hover:not(.inActive) {
+    opacity: .8;
+}
+
+.startButton {
+    background-color: darkgreen;
+}
+
+.killButton {
+    background-color: darkred;
+}
+
+.inActive {
+    background-color: dimgray;
+    transition: none;
+}
+
+.outputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.outputInfo {
+    background-color: whitesmoke;
+    padding: 5px;
+    font-size: small;
+}

@@ -1,0 +1,27 @@
+.eventItemContainer {
+    display: flex;
+    flex-direction: row;
+    border-radius: 5px;
+    gap: 5px;
+}
+
+.time {
+    width: 60px;
+    min-width: 60px;
+    background-color: white;
+    font-size: small;
+    padding: 5px 0 5px 0;
+}
+
+.message {
+    white-space: pre-line;
+    padding: 5px;
+    font-family: Courier, monospace;
+    background-color: whitesmoke;
+    border-radius: 5px;
+    color: green;
+}
+
+.error {
+    color: red;
+}

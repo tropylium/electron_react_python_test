@@ -1,7 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import {app, BrowserWindow, dialog, ipcMain} from 'electron';
 import * as path from "path";
-import {spawn, execFile} from "child_process"
-import {DeferredPromise} from "./DeferredPromise";
+import {ChildProcess, execFile} from "child_process"
 
 
 declare global {
@@ -11,14 +10,23 @@ declare global {
     num_letters: number,
   }
 
+  type Output = {
+    error: boolean,
+    time: number,
+    message: {
+      type: string,
+      message: string,
+    },
+  }
+
   interface Window {
     electronAPI: {
-      openFile: (
-            // fileNameCallback: FileNameCallback,
-            // fileOutputCallback: FileOutputCallback
-      ) => Promise<[DeferredPromise<string>, DeferredPromise<FileOutput>]>,// void
       selectFile: () => Promise<{file_path: string, file_name: string}>,
       processFile: (filePath: string) => Promise<FileOutput>,
+      startExec: (input: string) => void,
+      onExecStart: (callback: (event: Electron.IpcRendererEvent, time: Date) => void) => void,
+      onExecOutput: (callback: (event: Electron.IpcRendererEvent, output: Output) => void) => void,
+      onExecEnd: (callback: (event: Electron.IpcRendererEvent, error: boolean) => void) => void,
     }
   }
 }
@@ -43,9 +51,10 @@ const getExtraResourcePath = (fileName: string): string => {
   }
 }
 
+let mainWindow: BrowserWindow;
 const createWindow = (): void => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
     webPreferences: {
@@ -73,10 +82,16 @@ const selectFile = async () => {
   }
 }
 
+let child_process: ChildProcess = null;
 const processFile = async (event: Electron.IpcMainInvokeEvent, filePath: string) => {
+  if (child_process != null) {
+    child_process.kill();
+    console.log('killed process early');
+  }
   return new Promise<FileOutput>((resolve, reject) => {
-    execFile(getExtraResourcePath('file_processor'), [filePath],
+    child_process = execFile(getExtraResourcePath('file_processor'), [filePath],
         (error, stdout, stderr) => {
+          child_process = null;
           if (error) {
             reject(error);
           } else {
@@ -92,12 +107,51 @@ const processFile = async (event: Electron.IpcMainInvokeEvent, filePath: string)
   });
 }
 
+let currentlyRunning = false;
+let startTime = 0;
+const startExec = (event: Electron.IpcMainEvent, input: string) => {
+  if (!currentlyRunning) {
+    currentlyRunning = true
+    startTime = Date.now()
+    mainWindow.webContents.send('start', new Date());
+    execFile(getExtraResourcePath('file_processor'), [input],
+        (error, stdout, stderr) => {
+          currentlyRunning = false
+          const output: Output = {
+            time: (Date.now() - startTime)/1000,
+            error: undefined,
+            message: undefined,
+          };
+          if (stderr) {
+            output.error = true
+            try {
+              output.message = JSON.parse(stderr)
+            } catch (e) {
+              output.message = {
+                type: "N/A",
+                message: stdout
+              }
+            }
+          } else {
+            output.error = false
+            output.message = {
+              type: undefined,
+              message: stdout
+            }
+          }
+          mainWindow.webContents.send('output', output);
+          mainWindow.webContents.send('end', error !== null || stderr);
+        })
+  }
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   ipcMain.handle('selectFile', selectFile)
   ipcMain.handle('processFile', processFile)
+  ipcMain.handle('startExec', startExec)
   createWindow()
 });
 
