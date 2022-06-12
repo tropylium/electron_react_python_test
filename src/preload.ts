@@ -8,9 +8,9 @@ declare global {
     }
 
     type Output = {
-        error: boolean,
+        type: 'normal' | 'error' | 'debug',
         time: number,
-        message: {
+        output: {
             type: string,
             message: string,
         },
@@ -23,10 +23,11 @@ declare global {
             platform: string,
             onConsoleLog: (callback: (event: Electron.IpcRendererEvent, message: unknown) => void) => void,
             startExec: (input: string) => Promise<number>,
+            inputExec: (input: string) => void,
             killExec: () => Promise<boolean>,
             onExecStart: (callback: (event: Electron.IpcRendererEvent, time: Date) => void) => void,
             onExecOutput: (callback: (event: Electron.IpcRendererEvent, output: Output) => void) => void,
-            onExecEnd: (callback: (event: Electron.IpcRendererEvent, error: boolean) => void) => void,
+            onExecEnd: (callback: (event: Electron.IpcRendererEvent, code: number) => void) => void,
         }
     }
 }

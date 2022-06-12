@@ -28,9 +28,9 @@ const App = () => {
         window.electronAPI.onExecOutput((event, output) => {
             setFileOutputs((prevState => [...prevState, output]));
         })
-        window.electronAPI.onExecEnd((event, error) => {
+        window.electronAPI.onExecEnd((event, code) => {
             setCurrentlyRunning(false);
-            setExitStatus(!error);
+            setExitStatus(code === 0);
             setExited(true);
         })
     }, []);

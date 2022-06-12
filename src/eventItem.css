@@ -16,12 +16,22 @@
 .message {
     white-space: pre-line;
     padding: 5px;
-    font-family: Courier, monospace;
     background-color: whitesmoke;
     border-radius: 5px;
     color: green;
 }
 
-.error {
+.message.error, .message.normal {
+    font-family: Courier, monospace;
+}
+
+.message.error {
     color: red;
+}
+
+.message.debug {
+    color: initial;
+    background-color: whitesmoke;
+    padding: 5px;
+    font-size: small;
 }

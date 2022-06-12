@@ -6,12 +6,13 @@ type EventItemProps = {
 }
 const EventItem = (props: EventItemProps) => {
     const data = props.data;
+
     return <div className="eventItemContainer">
         <span className="time">
             {data.time.toFixed(3) + " s"}
         </span>
-        <span className={"message" + (data.error ? " error": "")}>
-            {data.error ? `Type: ${data.message.type}\nMessage: ${data.message.message}` : data.message.message}
+        <span className={"message " + (data.type)}>
+            {data.type === 'error' ? `Type: ${data.output.type}\nMessage: ${data.output.message}` : data.output.message}
         </span>
     </div>
 }

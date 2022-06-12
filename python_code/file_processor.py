@@ -1,25 +1,5 @@
 import sys, json
-sys.tracebacklimit = 0
 
-
-def print_out(message: str):
-    print(message, file=sys.stdout)
-
-
-def print_err(message: str):
-    print(message, file=sys.stderr)
-
-
-def my_custom_exception_handler(err_type: type, value: Exception, traceback):
-    err_output = {
-        "type": err_type.__name__,
-        "message": str(value),
-    }
-    print_err(json.dumps(err_output))
-    sys.exit(0)
-
-
-sys.excepthook = my_custom_exception_handler
 
 def process_file(filepath: str) -> tuple[int, int, int]:
     num_lines = 0
