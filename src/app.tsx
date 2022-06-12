@@ -42,6 +42,10 @@ const App = () => {
             setFileOutputs([]);
             window.electronAPI.startExec(input.current.value).then((pid) => {
                 setPid(pid);
+                if (pid === -1) {
+                    setCurrentlyRunning(false);
+                    setExited(true);
+                }
             });
         }
     }
@@ -68,7 +72,7 @@ const App = () => {
                 <input ref={input} placeholder="Input" onKeyPress={(e) => {if (e.key === 'Enter') onInput(e.currentTarget.value)}}/>
             </div>
             <p className="outputInfo" style={{display: (currentlyRunning || exited ? 'initial' : 'none')}}>
-                {`Process (pid: ${pid}) began at ${(startTime) ? startTime.toLocaleTimeString() : ""}`}
+                {pid >= 0 ? `Process (pid: ${pid}) began at ${(startTime) ? startTime.toLocaleTimeString() : ""}` : 'Unable to start process.'}
             </p>
             <div className="outputContainer">
                 {
