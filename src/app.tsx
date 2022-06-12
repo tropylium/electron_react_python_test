@@ -9,14 +9,19 @@ const container = document.getElementById('root')
 const root = createRoot(container);
 
 const App = () => {
-    const [currentlyRunning, setCurrentlyRunning] = useState(false);
     const [fileOutputs, setFileOutputs] = useState<Output[]>([]);
     const [startTime, setStartTime] = useState<Date>(undefined);
+    const [pid, setPid] = useState(-1);
     const [exitStatus, setExitStatus] = useState(true);
+    const [currentlyRunning, setCurrentlyRunning] = useState(false);
     const [exited, setExited] = useState(false);
+
     const input = useRef(null);
 
     useEffect(() => {
+        window.electronAPI.onConsoleLog(((event, message) => {
+            console.log('From main:\n' + message);
+        }))
         window.electronAPI.onExecStart(((event, time) => {
             setStartTime(time);
         }))
@@ -35,7 +40,17 @@ const App = () => {
             setCurrentlyRunning(true);
             setExited(false);
             setFileOutputs([]);
-            window.electronAPI.startExec(input.current.value);
+            window.electronAPI.startExec(input.current.value).then((pid) => {
+                setPid(pid);
+            });
+        }
+    }
+
+    const killProgram = () => {
+        if (currentlyRunning) {
+            window.electronAPI.killExec().then((result) => {
+                console.log('attempt kill result: ' + result);
+            });
         }
     }
 
@@ -46,13 +61,14 @@ const App = () => {
     return (
         <div className="appContainer">
             <h1>Python Exe Tester</h1>
+            <h4>OS: {window.electronAPI.platform}</h4>
             <div className="buttons">
                 <button className={`startButton ${currentlyRunning ? "inActive" : ""}`} onClick={startProgram}>Start</button>
-                <button className={`killButton ${!currentlyRunning ? "inActive" : ""}`}>Kill</button>
+                <button className={`killButton ${!currentlyRunning ? "inActive" : ""}`} onClick={killProgram}>Kill</button>
                 <input ref={input} placeholder="Input" onKeyPress={(e) => {if (e.key === 'Enter') onInput(e.currentTarget.value)}}/>
             </div>
             <p className="outputInfo" style={{display: (currentlyRunning || exited ? 'initial' : 'none')}}>
-                {`Process began at ${(startTime) ? startTime.toLocaleTimeString() : ""}`}
+                {`Process (pid: ${pid}) began at ${(startTime) ? startTime.toLocaleTimeString() : ""}`}
             </p>
             <div className="outputContainer">
                 {
