@@ -35,31 +35,31 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         result = process_file(sys.argv[1])
         print_out(f'Number of lines: {result[0]}\nNumber of bytes: {result[1]}\nNumber of letters: {result[2]}')
-    # for line in sys.stdin:
-    #     try:
-    #         num = int(line)
-    #         if num >= 0:
-    #             sleep(num//1000)
-    #             print_out(f'Waited {num} ms')
-    #         else:
-    #             raise MyCustomException('Attempted to wait negative amount of time.')
-    #     except ValueError:
-    #         # match line[:2]:
-    #         #     case 'p ':
-    #         #         print_out(f'"{line[2:-1]}"')
-    #         #     case 'e ':
-    #         #         raise MyCustomException(f'"{line[2:-1]}"')
-    #         #     case 'b ':
-    #         #         break
-    #         #     case _:
-    #         #         raise ValueError('Input did not match any patterns')
-    #         first_two = line[:2]
-    #         if first_two == 'p ':
-    #             print_out(f'"{line[2:-1]}"')
-    #         elif first_two == 'e ':
-    #             raise MyCustomException(f'"{line[2:-1]}"')
-    #         elif first_two == 'b ':
-    #             break
-    #         else:
-    #             raise ValueError('Input did not match any patterns')
+    for line in sys.stdin:
+        try:
+            num = int(line)
+            if num >= 0:
+                sleep(num/1000)
+                print_out(f'Waited {num} ms')
+            else:
+                raise MyCustomException('Attempted to wait negative amount of time.')
+        except ValueError:
+            # match line[:2]:
+            #     case 'p ':
+            #         print_out(f'"{line[2:-1]}"')
+            #     case 'e ':
+            #         raise MyCustomException(f'"{line[2:-1]}"')
+            #     case 'b ':
+            #         break
+            #     case _:
+            #         raise ValueError('Input did not match any patterns')
+            first_two = line[:2]
+            if first_two == 'p ':
+                print_out(f'"{line[2:-1]}"')
+            elif first_two == 'e ':
+                raise MyCustomException(f'"{line[2:-1]}"')
+            elif first_two == 'b ':
+                break
+            else:
+                raise ValueError('Input did not match any patterns')
 

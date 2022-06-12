@@ -55,7 +55,7 @@ const App = () => {
     }
 
     const onInput = (input: string) => {
-        console.log(input);
+        window.electronAPI.inputExec(input);
     }
 
     return (

@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     platform: process.platform,
     onConsoleLog: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.on('log', callback),
     startExec: (input: string) => ipcRenderer.invoke('startExec', input),
+    inputExec: (input: string) => ipcRenderer.invoke('inputExec', input),
     killExec: () => ipcRenderer.invoke('killExec'),
     onExecStart: (callback: (event: Electron.IpcRendererEvent, time: Date) => void) => ipcRenderer.on('start', callback),
     onExecOutput: (callback: (event: Electron.IpcRendererEvent, output: Output) => void) => ipcRenderer.on('output', callback),

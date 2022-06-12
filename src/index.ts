@@ -90,7 +90,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
     currentlyRunning = true
     startTime = Date.now()
     mainWindow.webContents.send('start', new Date());
-    currentProcess = spawn(getExtraResourcePath('tester'), [input]);
+    currentProcess = spawn(getExtraResourcePath('tester'), input.length > 0 ? [input] : []);
     currentProcess.stdout.on('data', data => {
       mainWindow.webContents.send('output', {
         type: 'normal',
@@ -122,6 +122,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
       mainWindow.webContents.send('end', code);
       currentProcess = undefined;
     });
+    currentProcess.stdin.setDefaultEncoding('utf-8');
     // currentProcess = execFile(getExtraResourcePath('file_processor'), [input],
     //     (error, stdout, stderr) => {
     //       currentlyRunning = false;
@@ -159,6 +160,11 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
   return -1;
 }
 
+const inputExec = (event: Electron.IpcMainInvokeEvent, input: string) => {
+  currentProcess.stdin.write(input + '\n');
+  // currentProcess.stdin.end();
+}
+
 const killExec = () => {
   if (currentlyRunning) {
     mainWindow.webContents.send('output', {
@@ -192,6 +198,7 @@ app.on('ready', () => {
   ipcMain.handle('selectFile', selectFile)
   // ipcMain.handle('processFile', processFile)
   ipcMain.handle('startExec', startExec)
+  ipcMain.handle('inputExec', inputExec)
   ipcMain.handle('killExec', killExec)
   createWindow()
 });

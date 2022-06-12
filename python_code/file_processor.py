@@ -1,4 +1,4 @@
-import sys, json
+from sys import argv
 
 
 def process_file(filepath: str) -> tuple[int, int, int]:
