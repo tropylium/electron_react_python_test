@@ -1,7 +1,7 @@
 .appContainer {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 }
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
@@ -13,6 +13,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     display: flex;
     flex-direction: row;
     gap: 5px;
+}
+
+input {
+    min-height: 32px;
 }
 
 button {
@@ -32,6 +36,10 @@ button:hover:not(.inActive) {
 
 .startButton {
     background-color: darkgreen;
+}
+
+.endStdinButton {
+    background-color: darkgoldenrod;
 }
 
 .killButton {

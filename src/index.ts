@@ -112,8 +112,33 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
 }
 
 const inputExec = (event: Electron.IpcMainInvokeEvent, input: string) => {
-  currentProcess.stdin.write(input + '\n');
-  // currentProcess.stdin.end();
+  if (currentlyRunning) {
+    currentProcess.stdin.write(input + '\n');
+    mainWindow.webContents.send('output', {
+      type: "debug",
+      time: (Date.now() - startTime)/1000,
+      output: {
+        type: undefined,
+        // Technically this message should be handled by renderer, but oh well
+        message: `>>> stdin: ${input}`
+      }
+    } as Output);
+  }
+}
+
+const endInput = () => {
+  if (currentlyRunning) {
+    currentProcess.stdin.end();
+    mainWindow.webContents.send('output', {
+      type: "debug",
+      time: (Date.now() - startTime)/1000,
+      output: {
+        type: undefined,
+        // Technically this message should be handled by renderer, but oh well
+        message: `Attempted to end stdin`
+      }
+    } as Output);
+  }
 }
 
 const killExec = () => {
@@ -147,9 +172,9 @@ const killExec = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   ipcMain.handle('selectFile', selectFile)
-  // ipcMain.handle('processFile', processFile)
   ipcMain.handle('startExec', startExec)
   ipcMain.handle('inputExec', inputExec)
+  ipcMain.handle('endInput', endInput)
   ipcMain.handle('killExec', killExec)
   createWindow()
 });

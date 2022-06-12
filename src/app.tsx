@@ -16,7 +16,8 @@ const App = () => {
     const [currentlyRunning, setCurrentlyRunning] = useState(false);
     const [exited, setExited] = useState(false);
 
-    const input = useRef(null);
+    const arg_input = useRef(undefined)
+    const stdin_input = useRef(undefined);
 
     useEffect(() => {
         window.electronAPI.onConsoleLog(((event, message) => {
@@ -40,7 +41,7 @@ const App = () => {
             setCurrentlyRunning(true);
             setExited(false);
             setFileOutputs([]);
-            window.electronAPI.startExec(input.current.value).then((pid) => {
+            window.electronAPI.startExec(arg_input.current.value).then((pid) => {
                 setPid(pid);
                 if (pid === -1) {
                     setCurrentlyRunning(false);
@@ -62,14 +63,22 @@ const App = () => {
         window.electronAPI.inputExec(input);
     }
 
+    const endInput = () => {
+        window.electronAPI.endInput();
+    }
+
     return (
         <div className="appContainer">
             <h1>Python Exe Tester</h1>
             <h4>OS: {window.electronAPI.platform}</h4>
             <div className="buttons">
                 <button className={`startButton ${currentlyRunning ? "inActive" : ""}`} onClick={startProgram}>Start</button>
+                <button className={`endStdinButton ${!currentlyRunning ? "inActive" : ""}`} onClick={endInput}>End stdin</button>
                 <button className={`killButton ${!currentlyRunning ? "inActive" : ""}`} onClick={killProgram}>Kill</button>
-                <input ref={input} placeholder="Input" onKeyPress={(e) => {if (e.key === 'Enter') onInput(e.currentTarget.value)}}/>
+            </div>
+            <div className="buttons">
+                <input ref={arg_input} placeholder="args" onKeyPress={(e) => {if (e.key === 'Enter') startProgram()}}/>
+                <input ref={stdin_input} placeholder="stdin" onKeyPress={(e) => {if (e.key === 'Enter') onInput(e.currentTarget.value)}}/>
             </div>
             <p className="outputInfo" style={{display: (currentlyRunning || exited ? 'initial' : 'none')}}>
                 {pid >= 0 ? `Process (pid: ${pid}) began at ${(startTime) ? startTime.toLocaleTimeString() : ""}` : 'Unable to start process.'}
