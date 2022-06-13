@@ -21,9 +21,9 @@ declare global {
     interface Window {
         electronAPI: {
             selectFile: () => Promise<{file_path: string, file_name: string}>,
-            // processFile: (filePath: string) => Promise<FileOutput>,
             platform: string,
             onConsoleLog: (callback: (event: Electron.IpcRendererEvent, message: unknown) => void) => void,
+            getExecStatus: () => Promise<ExecStatus>,
             startExec: (input: string) => Promise<number>,
             inputExec: (input: string) => void,
             endInput: () => void,
@@ -36,11 +36,10 @@ declare global {
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    //openFile: () => ipcRenderer.invoke('dialog:openFile'),
     selectFile: () => ipcRenderer.invoke('selectFile'),
-    processFile: (filePath: string) => ipcRenderer.invoke('processFile', filePath),
     platform: process.platform,
     onConsoleLog: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.on('log', callback),
+    getExecStatus: () => ipcRenderer.invoke('getExec'),
     startExec: (input: string) => ipcRenderer.invoke('startExec', input),
     inputExec: (input: string) => ipcRenderer.invoke('inputExec', input),
     endInput: () => ipcRenderer.invoke('endInput'),

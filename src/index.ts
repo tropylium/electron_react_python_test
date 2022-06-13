@@ -57,19 +57,24 @@ const selectFile = async () => {
   }
 }
 
-let currentlyRunning = false;
+let execStatus: ExecStatus = 'initial';
 let startTime = 0;
 let currentProcess: ChildProcess = undefined;
+
+const getExecStatus = (): ExecStatus => {
+  return execStatus;
+}
+
 const startExec = (event: Electron.IpcMainEvent, input: string) => {
-  if (!currentlyRunning) {
-    currentlyRunning = true;
+  if (execStatus !== 'running') {
+    execStatus = 'running';
     startTime = Date.now();
     currentProcess = spawn(getExtraResourcePath('tester'), input.length > 0 ? [input] : []);
     mainWindow.webContents.send('start', new Date());
 
     currentProcess.on('error', (err) => {
       consoleLog(err);
-      currentlyRunning = false;
+      execStatus = 'finished';
     });
 
     currentProcess.stdout.on('data', data => {
@@ -101,7 +106,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
     });
 
     currentProcess.on('close', (code) => {
-      currentlyRunning = false;
+      execStatus = 'finished';
       mainWindow.webContents.send('end', code);
       currentProcess = undefined;
     });
@@ -114,7 +119,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
 }
 
 const inputExec = (event: Electron.IpcMainInvokeEvent, input: string) => {
-  if (currentlyRunning) {
+  if (execStatus === 'running') {
     currentProcess.stdin.write(input + '\n');
     mainWindow.webContents.send('output', {
       type: "debug",
@@ -129,7 +134,7 @@ const inputExec = (event: Electron.IpcMainInvokeEvent, input: string) => {
 }
 
 const endInput = () => {
-  if (currentlyRunning) {
+  if (execStatus === 'running') {
     currentProcess.stdin.end();
     mainWindow.webContents.send('output', {
       type: "debug",
@@ -144,7 +149,7 @@ const endInput = () => {
 }
 
 const killExec = () => {
-  if (currentlyRunning) {
+  if (execStatus === 'running') {
     mainWindow.webContents.send('output', {
       type: "debug",
       time: (Date.now() - startTime)/1000,
@@ -174,6 +179,7 @@ const killExec = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   ipcMain.handle('selectFile', selectFile)
+  ipcMain.handle('getExec', getExecStatus)
   ipcMain.handle('startExec', startExec)
   ipcMain.handle('inputExec', inputExec)
   ipcMain.handle('endInput', endInput)
