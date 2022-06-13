@@ -44,7 +44,7 @@ const App = () => {
             block: 'end',
             inline: 'end',
         });
-    }, [fileOutputs]);
+    }, [fileOutputs, execStatus]);
 
     const startProgram = () => {
         if (execStatus !== undefined && execStatus !== 'running') {
