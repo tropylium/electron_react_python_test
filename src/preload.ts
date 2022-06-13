@@ -16,6 +16,8 @@ declare global {
         },
     }
 
+    type ExecStatus = 'initial' | 'running' | 'finished'
+
     interface Window {
         electronAPI: {
             selectFile: () => Promise<{file_path: string, file_name: string}>,

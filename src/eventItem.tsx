@@ -4,6 +4,7 @@ import "./eventItem.css"
 type EventItemProps = {
     data: Output
 }
+
 const EventItem = (props: EventItemProps) => {
     const data = props.data;
 

@@ -69,6 +69,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
 
     currentProcess.on('error', (err) => {
       consoleLog(err);
+      currentlyRunning = false;
     });
 
     currentProcess.stdout.on('data', data => {
@@ -108,6 +109,7 @@ const startExec = (event: Electron.IpcMainEvent, input: string) => {
 
     return currentProcess.pid;
   }
+  consoleLog("Current process has not ended. Cannot start new process.");
   return -1;
 }
 

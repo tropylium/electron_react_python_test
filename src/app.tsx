@@ -13,11 +13,14 @@ const App = () => {
     const [startTime, setStartTime] = useState<Date>(undefined);
     const [pid, setPid] = useState(-1);
     const [exitStatus, setExitStatus] = useState(true);
+
+    const [execStatus, setExecStatus] = useState<ExecStatus>('initial')
     const [currentlyRunning, setCurrentlyRunning] = useState(false);
     const [exited, setExited] = useState(false);
 
-    const arg_input = useRef(undefined)
-    const stdin_input = useRef(undefined);
+    const arg_input = useRef<HTMLInputElement>(undefined)
+    const stdin_input = useRef<HTMLInputElement>(undefined);
+    const output_scroll_container = useRef<HTMLDivElement>(undefined);
 
     useEffect(() => {
         window.electronAPI.onConsoleLog(((event, message) => {
@@ -36,14 +39,22 @@ const App = () => {
         })
     }, []);
 
+    useEffect(() => {
+        output_scroll_container.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+            inline: 'end',
+        });
+    }, [fileOutputs]);
+
     const startProgram = () => {
         if (!currentlyRunning) {
             setCurrentlyRunning(true);
             setExited(false);
             setFileOutputs([]);
-            window.electronAPI.startExec(arg_input.current.value).then((pid) => {
-                setPid(pid);
-                if (pid === -1) {
+            window.electronAPI.startExec(arg_input.current.value).then((new_pid) => {
+                setPid(new_pid);
+                if (new_pid === -1) {
                     setCurrentlyRunning(false);
                     setExited(true);
                 }
@@ -83,12 +94,14 @@ const App = () => {
             <p className="outputInfo" style={{display: (currentlyRunning || exited ? 'initial' : 'none')}}>
                 {pid >= 0 ? `Process (pid: ${pid}) began at ${(startTime) ? startTime.toLocaleTimeString() : ""}` : 'Unable to start process.'}
             </p>
-            <div className="outputContainer">
-                {
-                    fileOutputs.map((item, index) =>
-                        <EventItem data={item} key={item.time + index.toString()}/>
-                    )
-                }
+            <div className="outputScrollContainer">
+                <div className="outputContainer" ref={output_scroll_container}>
+                    {
+                        fileOutputs.map((item, index) =>
+                            <EventItem data={item} key={item.time + index.toString()}/>
+                        )
+                    }
+                </div>
             </div>
             <p className="outputInfo" style={{display: (exited ? 'initial' : 'none')}}>
                 {`Process exited ${exitStatus ? "successfully" : "with an error."}`}
